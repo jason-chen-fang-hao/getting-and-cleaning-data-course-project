@@ -64,37 +64,7 @@ names(singleDataSet) <- gsub('Mag',"Magnitude",names(singleDataSet))
 names(singleDataSet) <- gsub('^t',"TimeDomain.",names(singleDataSet))
 names(singleDataSet) <- gsub('^f',"FrequencyDomain.",names(singleDataSet))
 names(singleDataSet) <- gsub('\\.mean',".Mean",names(singleDataSet))
-names(singleDataSet) <- gsub('\\.std',".StandardDeviation",names(singleDataSet))
-names(singleDataSet) <- gsub('Freq\\.',"Frequency.",names(singleDataSet))
-names(singleDataSet) <- gsub('Freq$',"Frequency",names(singleDataSet))
-
-View(singleDataSet)
-
-#Creates a second, independent tidy data set with the average of each variable for each activity and each subject.
-names(singleDataSet)
-
-##  [1] "TimeDomain.BodyAcceleration.Mean...X"                                    
-##  [2] "TimeDomain.BodyAcceleration.Mean...Y"                                    
-##  [3] "TimeDomain.BodyAcceleration.Mean...Z"                                    
-##  [4] "TimeDomain.BodyAcceleration.StandardDeviation...X"                       
-##  [5] "TimeDomain.BodyAcceleration.StandardDeviation...Y"                       
-##  [6] "TimeDomain.BodyAcceleration.StandardDeviation...Z"                       
-##  [7] "TimeDomain.GravityAcceleration.Mean...X"                                 
-##  [8] "TimeDomain.GravityAcceleration.Mean...Y"                                 
-##  [9] "TimeDomain.GravityAcceleration.Mean...Z"                                 
-## [10] "TimeDomain.GravityAcceleration.StandardDeviation...X"                    
-## [11] "TimeDomain.GravityAcceleration.StandardDeviation...Y"                    
-## [12] "TimeDomain.GravityAcceleration.StandardDeviation...Z"                    
-## [13] "TimeDomain.BodyAccelerationJerk.Mean...X"                                
-## [14] "TimeDomain.BodyAccelerationJerk.Mean...Y"                                
-## [15] "TimeDomain.BodyAccelerationJerk.Mean...Z"                                
-## [16] "TimeDomain.BodyAccelerationJerk.StandardDeviation...X"                   
-## [17] "TimeDomain.BodyAccelerationJerk.StandardDeviation...Y"                   
-## [18] "TimeDomain.BodyAccelerationJerk.StandardDeviation...Z"                   
-## [19] "TimeDomain.BodyAngularSpeed.Mean...X"                                    
-## [20] "TimeDomain.BodyAngularSpeed.Mean...Y"                                    
-## [21] "TimeDomain.BodyAngularSpeed.Mean...Z"                                    
-## [22] "TimeDomain.BodyAngularSpeed.StandardDeviation...X"                       
+                       
 library(reshape2)
 
 filename <- "getdata_dataset.zip"
