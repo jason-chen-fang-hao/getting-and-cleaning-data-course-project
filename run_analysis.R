@@ -95,54 +95,53 @@ names(singleDataSet)
 ## [20] "TimeDomain.BodyAngularSpeed.Mean...Y"                                    
 ## [21] "TimeDomain.BodyAngularSpeed.Mean...Z"                                    
 ## [22] "TimeDomain.BodyAngularSpeed.StandardDeviation...X"                       
-## [23] "TimeDomain.BodyAngularSpeed.StandardDeviation...Y"                       
-## [24] "TimeDomain.BodyAngularSpeed.StandardDeviation...Z"                       
-## [25] "TimeDomain.BodyAngularAcceleration.Mean...X"                             
-## [26] "TimeDomain.BodyAngularAcceleration.Mean...Y"                             
-## [27] "TimeDomain.BodyAngularAcceleration.Mean...Z"                             
-## [28] "TimeDomain.BodyAngularAcceleration.StandardDeviation...X"                
-## [29] "TimeDomain.BodyAngularAcceleration.StandardDeviation...Y"                
-## [30] "TimeDomain.BodyAngularAcceleration.StandardDeviation...Z"                
-## [31] "TimeDomain.BodyAccelerationMagnitude.Mean.."                             
-## [32] "TimeDomain.BodyAccelerationMagnitude.StandardDeviation.."                
-## [33] "TimeDomain.GravityAccelerationMagnitude.Mean.."                          
-## [34] "TimeDomain.GravityAccelerationMagnitude.StandardDeviation.."             
-## [35] "TimeDomain.BodyAccelerationJerkMagnitude.Mean.."                         
-## [36] "TimeDomain.BodyAccelerationJerkMagnitude.StandardDeviation.."            
-## [37] "TimeDomain.BodyAngularSpeedMagnitude.Mean.."                             
-## [38] "TimeDomain.BodyAngularSpeedMagnitude.StandardDeviation.."                
-## [39] "TimeDomain.BodyAngularAccelerationMagnitude.Mean.."                      
-## [40] "TimeDomain.BodyAngularAccelerationMagnitude.StandardDeviation.."         
-## [41] "FrequencyDomain.BodyAcceleration.Mean...X"                               
-## [42] "FrequencyDomain.BodyAcceleration.Mean...Y"                               
-## [43] "FrequencyDomain.BodyAcceleration.Mean...Z"                               
-## [44] "FrequencyDomain.BodyAcceleration.StandardDeviation...X"                  
-## [45] "FrequencyDomain.BodyAcceleration.StandardDeviation...Y"                  
-## [46] "FrequencyDomain.BodyAcceleration.StandardDeviation...Z"                  
-## [47] "FrequencyDomain.BodyAccelerationJerk.Mean...X"                           
-## [48] "FrequencyDomain.BodyAccelerationJerk.Mean...Y"                           
-## [49] "FrequencyDomain.BodyAccelerationJerk.Mean...Z"                           
-## [50] "FrequencyDomain.BodyAccelerationJerk.StandardDeviation...X"              
-## [51] "FrequencyDomain.BodyAccelerationJerk.StandardDeviation...Y"              
-## [52] "FrequencyDomain.BodyAccelerationJerk.StandardDeviation...Z"              
-## [53] "FrequencyDomain.BodyAngularSpeed.Mean...X"                               
-## [54] "FrequencyDomain.BodyAngularSpeed.Mean...Y"                               
-## [55] "FrequencyDomain.BodyAngularSpeed.Mean...Z"                               
-## [56] "FrequencyDomain.BodyAngularSpeed.StandardDeviation...X"                  
-## [57] "FrequencyDomain.BodyAngularSpeed.StandardDeviation...Y"                  
-## [58] "FrequencyDomain.BodyAngularSpeed.StandardDeviation...Z"                  
-## [59] "FrequencyDomain.BodyAccelerationMagnitude.Mean.."                        
-## [60] "FrequencyDomain.BodyAccelerationMagnitude.StandardDeviation.."           
-## [61] "FrequencyDomain.BodyBodyAccelerationJerkMagnitude.Mean.."                
-## [62] "FrequencyDomain.BodyBodyAccelerationJerkMagnitude.StandardDeviation.."   
-## [63] "FrequencyDomain.BodyBodyAngularSpeedMagnitude.Mean.."                    
-## [64] "FrequencyDomain.BodyBodyAngularSpeedMagnitude.StandardDeviation.."       
-## [65] "FrequencyDomain.BodyBodyAngularAccelerationMagnitude.Mean.."             
-## [66] "FrequencyDomain.BodyBodyAngularAccelerationMagnitude.StandardDeviation.."
-## [67] "Activity"                                                                
-## [68] "Subject"
+library(reshape2)
 
-Data2<-aggregate(. ~Subject + Activity, singleDataSet, mean)
-Data2<-Data2[order(Data2$Subject,Data2$Activity),]
-write.table(Data2, file = "tidydata.txt",row.name=FALSE)
+filename <- "getdata_dataset.zip"
 
+## Download and unzip the dataset:
+if (!file.exists(filename)){
+  fileURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip "
+  download.file(fileURL, filename, method="curl")
+}  
+if (!file.exists("UCI HAR Dataset")) { 
+  unzip(filename) 
+}
+
+# Load activity labels + features
+activityLabels <- read.table("UCI HAR Dataset/activity_labels.txt")
+activityLabels[,2] <- as.character(activityLabels[,2])
+features <- read.table("UCI HAR Dataset/features.txt")
+features[,2] <- as.character(features[,2])
+
+# Extract only the data on mean and standard deviation
+featuresWanted <- grep(".*mean.*|.*std.*", features[,2])
+featuresWanted.names <- features[featuresWanted,2]
+featuresWanted.names = gsub('-mean', 'Mean', featuresWanted.names)
+featuresWanted.names = gsub('-std', 'Std', featuresWanted.names)
+featuresWanted.names <- gsub('[-()]', '', featuresWanted.names)
+
+
+# Load the datasets
+train <- read.table("UCI HAR Dataset/train/X_train.txt")[featuresWanted]
+trainActivities <- read.table("UCI HAR Dataset/train/Y_train.txt")
+trainSubjects <- read.table("UCI HAR Dataset/train/subject_train.txt")
+train <- cbind(trainSubjects, trainActivities, train)
+
+test <- read.table("UCI HAR Dataset/test/X_test.txt")[featuresWanted]
+testActivities <- read.table("UCI HAR Dataset/test/Y_test.txt")
+testSubjects <- read.table("UCI HAR Dataset/test/subject_test.txt")
+test <- cbind(testSubjects, testActivities, test)
+
+# merge datasets and add labels
+allData <- rbind(train, test)
+colnames(allData) <- c("subject", "activity", featuresWanted.names)
+
+# turn activities & subjects into factors
+allData$activity <- factor(allData$activity, levels = activityLabels[,1], labels = activityLabels[,2])
+allData$subject <- as.factor(allData$subject)
+
+allData.melted <- melt(allData, id = c("subject", "activity"))
+allData.mean <- dcast(allData.melted, subject + activity ~ variable, mean)
+
+write.table(allData.mean, "tidy.txt", row.names = FALSE, quote = FALSE)
